@@ -156,6 +156,10 @@ define Package/ruby/config
 
 endef
 
+define Package/ruby/extra_provides
+      echo 'libruby.so';
+endef
+
 define Package/ruby/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_DIR) $(1)/usr/lib/ruby/$(PKG_ABI_VERSION)
