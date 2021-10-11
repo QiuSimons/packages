@@ -10,22 +10,21 @@ PKG_RELRO_FULL:=0
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=knot-resolver
-PKG_VERSION:=5.3.0
+PKG_VERSION:=5.4.0
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=https://secure.nic.cz/files/knot-resolver
-PKG_HASH:=fb6cb2c03f4fffbdd8a0098127383d03b14cf7d6abf3a0cd229fb13ff68ee33e
+PKG_HASH:=534af671b98433b23b57039acc9d7d3c100a4888a8cf9aeba36161774ca0815e
 
-PKG_MAINTAINER:=Jan Pavlinec <jan.pavlinec@nic.cz>
+PKG_MAINTAINER:=Jan Pavlinec <jan.pavlinec1@gmail.com>
 PKG_LICENSE:=GPL-3.0-later
 PKG_LICENSE_FILES:=COPYING
 
-PKG_BUILD_DEPENDS:=meson/host
 PKG_INSTALL:=1
 
 include $(INCLUDE_DIR)/package.mk
-include ../../devel/meson/meson.mk
+include $(INCLUDE_DIR)/meson.mk
 
 define Package/knot-resolver
   SECTION:=net
@@ -57,6 +56,7 @@ define Package/knot-resolver/config
 	source "$(SOURCE)/Config.in"
 endef
 
+# kres_gen_test breaks on cross, fix is already upstream
 MESON_ARGS+= \
 	$(if $(CONFIG_PACKAGE_knot-resolver_dnstap), -Ddnstap=enabled,-Ddnstap=disabled) \
 	-Dcapng=disabled \
@@ -69,6 +69,7 @@ MESON_ARGS+= \
 	-Dkeyfile_default=/etc/knot-resolver/root.keys \
 	-Dprefix=/usr \
 	-Dunit_tests=disabled \
+	-Dkres_gen_test=false \
 	-Dutils=disabled
 
 define Package/knot-resolver/install
