@@ -106,7 +106,7 @@ define Build/Compile
 		VERSION="$(PKG_VERSION)" SUBVERS="-$(PKG_RELEASE)" \
 		VERDATE="$(shell date -d @$(SOURCE_DATE_EPOCH) '+%Y/%m/%d')" IGNOREGIT=1 \
 		$(ADDON) \
-		CFLAGS="$(TARGET_CFLAGS) -fno-strict-aliasing -Wdeclaration-after-statement -Wno-unused-label -Wno-sign-compare -Wno-unused-parameter -Wno-clobbered -Wno-missing-field-initializers -Wno-cast-function-type -Wno-address-of-packed-member -Wtype-limits -Wshift-negative-value -Wshift-overflow=2 -Wduplicated-cond -Wnull-dereference -fwrapv -fasynchronous-unwind-tables -Wno-null-dereference" \
+		CFLAGS="$(filter-out -funroll-loops,$(TARGET_CFLAGS)) -fno-strict-aliasing -Wdeclaration-after-statement -Wno-unused-label -Wno-sign-compare -Wno-unused-parameter -Wno-clobbered -Wno-missing-field-initializers -Wno-cast-function-type -Wno-address-of-packed-member -Wtype-limits -Wshift-negative-value -Wshift-overflow=2 -Wduplicated-cond -Wnull-dereference -fwrapv -fasynchronous-unwind-tables -Wno-null-dereference" \
 		LD="$(TARGET_CC)" \
 		LDFLAGS="$(TARGET_LDFLAGS) -latomic"
 
@@ -120,7 +120,7 @@ define Build/Compile
 	$(MAKE_VARS) $(MAKE) -C $(PKG_BUILD_DIR) \
 		DESTDIR="$(PKG_INSTALL_DIR)" \
 		CC="$(TARGET_CC)" \
-		CFLAGS="$(TARGET_CFLAGS) -Wno-address-of-packed-member" \
+		CFLAGS="$(filter-out -funroll-loops,$(TARGET_CFLAGS)) -Wno-address-of-packed-member" \
 		LDFLAGS="$(TARGET_LDFLAGS)" \
 		admin/halog/halog
 endef
