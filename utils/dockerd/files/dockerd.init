@@ -211,6 +211,9 @@ process_config() {
 }
 
 start_service() {
+	uci del firewall.docker.device
+	uci add_list firewall.docker.device='docker0'
+	
 	local nofile=$(cat /proc/sys/fs/nr_open)
 
 	process_config
