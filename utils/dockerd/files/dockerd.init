@@ -224,6 +224,11 @@ start_service() {
 	fi
 	procd_set_param limits nofile="${nofile} ${nofile}"
 	procd_close_instance
+
+	uci del firewall.docker.device
+	uci add_list firewall.docker.device='docker0'
+	uci commit firewall
+
 }
 
 reload_service() {
