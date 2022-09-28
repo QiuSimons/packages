@@ -211,6 +211,17 @@ process_config() {
 }
 
 start_service() {
+	uci del firewall.docker.device
+	uci add_list firewall.docker.device='docker0'
+	uci commit firewall
+	uci import firewall < /etc/config/firewall
+	uci set firewall.dockerd=forwarding
+	uci set firewall.@forwarding[-1].src='docker'
+	uci set firewall.@forwarding[-1].dest='wan'
+	uci commit firewall
+	
+	[ "$(uci -q get dockerd.globals.auto_start)" -eq "0" ] && return 1
+	
 	local nofile=$(cat /proc/sys/fs/nr_open)
 
 	process_config
