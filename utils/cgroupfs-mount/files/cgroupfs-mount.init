@@ -9,4 +9,5 @@ boot() {
 	fi
 
 	cgroupfs-mount
+	mount -t cgroup2 cgroup2 /sys/fs/cgroup
 }
