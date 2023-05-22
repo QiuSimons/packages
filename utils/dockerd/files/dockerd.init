@@ -211,6 +211,8 @@ process_config() {
 }
 
 start_service() {
+	[ "$(uci -q get dockerd.globals.auto_start)" -eq "0" ] && return 1
+
 	local nofile=$(cat /proc/sys/fs/nr_open)
 
 	process_config
