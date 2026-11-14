@@ -9,10 +9,11 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=beep
 PKG_VERSION:=1.4.12
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=6
 
 PKG_LICENSE:=GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING
+PKG_CPE_ID:=cpe:/a:beep_project:beep
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/spkr-beep/beep/tar.gz/v$(PKG_VERSION)?

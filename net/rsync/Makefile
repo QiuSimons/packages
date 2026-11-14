@@ -8,17 +8,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rsync
-PKG_VERSION:=3.2.4
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=3.5.2
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://download.samba.org/pub/rsync/src
-PKG_HASH:=6f761838d08052b0b6579cf7f6737d93e47f01f4da04c5d24d3447b7f2a5fad1
+PKG_SOURCE_URL:=https://download.samba.org/pub/$(PKG_NAME)/src
+PKG_HASH:=a10d591825251e070f74c98df3daad195def4ed81b4a2de16169026aea33f6c8
 
 PKG_MAINTAINER:=Maxim Storchak <m.storchak@gmail.com>
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=COPYING
-PKG_CPE_ID:=cpe:/a:rsync:rsync
+PKG_CPE_ID:=cpe:/a:samba:rsync
 
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
@@ -30,8 +30,9 @@ define Package/rsync
   SECTION:=net
   CATEGORY:=Network
   SUBMENU:=File Transfer
-  TITLE:=Fast remote file copy program (like rcp)
-  DEPENDS:=+libpopt +zlib +RSYNC_xattr:libattr +RSYNC_acl:libacl +RSYNC_zstd:libzstd $(ICONV_DEPENDS)
+  TITLE:=an open source utility that provides fast incremental file transfer
+  DEPENDS:=+libpopt +zlib +RSYNC_xattr:libattr +RSYNC_acl:libacl +RSYNC_idn:libidn2 \
+	+RSYNC_zstd:libzstd +RSYNC_xxhash:libxxhash +RSYNC_lz4:liblz4 $(ICONV_DEPENDS)
   URL:=https://rsync.samba.org/
   MENU:=1
 endef
@@ -47,18 +48,19 @@ CONFIGURE_ARGS += \
 	--without-included-zlib \
 	--disable-debug \
 	--disable-asm \
-	--disable-lz4 \
 	--disable-locale \
 	--disable-md2man \
 	--disable-openssl \
 	--disable-simd \
 	--disable-roll-simd \
-	--disable-xxhash \
 	--$(if $(CONFIG_BUILD_NLS),en,dis)able-iconv \
 	--$(if $(CONFIG_BUILD_NLS),en,dis)able-iconv-open \
 	--$(if $(CONFIG_RSYNC_zstd),en,dis)able-zstd \
+	--$(if $(CONFIG_RSYNC_lz4),en,dis)able-lz4 \
 	--$(if $(CONFIG_RSYNC_xattr),en,dis)able-xattr-support \
 	--$(if $(CONFIG_RSYNC_acl),en,dis)able-acl-support \
+	--$(if $(CONFIG_RSYNC_xxhash),en,dis)able-xxhash \
+	--$(if $(CONFIG_RSYNC_idn),en,dis)able-idn \
 	$(if $(CONFIG_IPV6),,--disable-ipv6)
 
 define Package/rsyncd
@@ -67,6 +69,7 @@ define Package/rsyncd
   SUBMENU:=File Transfer
   TITLE:=Rsync daemon
   DEPENDS:=+rsync
+  USERID:=rsyncd=976:rsyncd=976
   URL:=https://rsync.samba.org/
 endef
 
@@ -75,7 +78,7 @@ define Package/rrsync
   CATEGORY:=Network
   SUBMENU:=File Transfer
   TITLE:=Restricted rsync script
-  DEPENDS:=+rsync +perlbase-file +perl @(PACKAGE_openssh-server||PACKAGE_openssh-server-pam)
+  DEPENDS:=+rsync python3-light @(PACKAGE_openssh-server||PACKAGE_openssh-server-pam||(PACKAGE_dropbear&&DROPBEAR_SVR_PUBKEY_OPTIONS))
   URL:=https://www.samba.org/ftp/unpacked/rsync/support/rrsync
 endef
 
@@ -108,6 +111,8 @@ define Package/rsyncd/install
 	$(INSTALL_DATA) ./files/rsyncd.conf $(1)/etc/
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/rsyncd.init $(1)/etc/init.d/rsyncd
+	$(INSTALL_DIR) $(1)/etc/capabilities
+	$(INSTALL_DATA) ./files/rsyncd.json $(1)/etc/capabilities
 endef
 
 define Package/rrsync/description

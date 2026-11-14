@@ -8,13 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mutt
-PKG_VERSION:=2.1.5
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=2.4.3
+PKG_RELEASE:=1
 
-PKG_SOURCE_URL:=https://bitbucket.org/mutt/mutt/downloads/ \
-		http://ftp.mutt.org/pub/mutt/
+PKG_SOURCE_URL:=http://ftp.mutt.org/pub/mutt/
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_HASH:=92a309e47e363a97d62425bcb71adceae5ab5c4c413dbcac37fa98ed70c12be0
+PKG_HASH:=ce9154e3afede622d98b90a22c87d06f32051c930a9afb2b7ef41656c4dbc948
 
 PKG_MAINTAINER:=Phil Eichinger <phil@zankapfel.net>
 PKG_LICENSE:=GPL-2.0-or-later
@@ -24,6 +23,14 @@ PKG_CPE_ID:=cpe:/a:mutt:mutt
 PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
+PKG_CONFIG_DEPENDS:= \
+	CONFIG_MUTT_POP \
+	CONFIG_MUTT_IMAP \
+	CONFIG_MUTT_SMTP \
+	CONFIG_MUTT_HCACHE \
+	CONFIG_MUTT_SASL \
+	CONFIG_MUTT_GNUTLS \
+	CONFIG_MUTT_OPENSSL
 
 include $(INCLUDE_DIR)/package.mk
 

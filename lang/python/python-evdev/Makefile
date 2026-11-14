@@ -9,14 +9,16 @@ include $(TOPDIR)/rules.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=python-evdev
-PKG_VERSION:=1.5.0
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=2.0.0
+PKG_RELEASE:=1
 
 PKG_LICENSE:=BSD-3-Clause
 PKG_MAINTAINER:=Paulo Costa <me@paulo.costa.nom.br>, Alexandru Ardelean <ardeleanalex@gmail.com>
 
 PYPI_NAME:=evdev
-PKG_HASH:=5b33b174f7c84576e7dd6071e438bf5ad227da95efd4356a39fe4c8355412fe6
+PKG_HASH:=442fb3f4c8dfc9e61e901133c356220c02d663eca8f34722e0cecdd637eba504
+
+PKG_BUILD_DEPENDS:=python-setuptools/host
 
 include ../pypi.mk
 include $(INCLUDE_DIR)/package.mk
@@ -37,12 +39,13 @@ define Package/python3-evdev/description
 	Bindings to the Linux input handling subsystem
 endef
 
-LINUX_EVDEV_HEADERS="$(LINUX_DIR)/include/uapi/linux/input.h:$(LINUX_DIR)/include/uapi/linux/input-event-codes.h"
+LINUX_EVDEV_HEADERS="$(LINUX_DIR)/include/uapi/linux/input.h:$(LINUX_DIR)/include/uapi/linux/uinput.h:$(LINUX_DIR)/include/uapi/linux/input-event-codes.h"
 
-PYTHON3_PKG_SETUP_GLOBAL_ARGS:= \
-	build build_ecodes \
-	--evdev-headers="$(LINUX_EVDEV_HEADERS)" \
-	build_ext
+PYTHON3_PKG_BUILD_CONFIG_SETTINGS:= \
+	--build-option=build \
+	--build-option=build_ecodes \
+	--build-option=--evdev-headers="$(LINUX_EVDEV_HEADERS)" \
+	--build-option=build_ext
 
 $(eval $(call Py3Package,python3-evdev))
 $(eval $(call BuildPackage,python3-evdev))

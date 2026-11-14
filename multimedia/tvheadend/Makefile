@@ -1,44 +1,52 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=tvheadend
-PKG_VERSION:=2021-11-16
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=3
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/tvheadend/tvheadend.git
-PKG_MIRROR_HASH:=1645e90b6b8f104f2749fb0911493010f7ae3176253f2a96a4d6094536207c03
-PKG_SOURCE_VERSION:=2efe90cdcf74fdc4179692d283cf46c85e1cf681
-PKG_SOURCE_DATE:=2021-11-16
+PKG_SOURCE_URL:=https://github.com/tvheadend/tvheadend
+PKG_MIRROR_HASH:=da2a0c9f49c678e0c6f71c095e16555f3cbaf34d0a7b95b06ade7cfde0f98b9f
+PKG_SOURCE_VERSION:=547f8bfaec9307d3ba59370159df792295593f59
+PKG_SOURCE_DATE:=2026-09-24
 
 PKG_LICENSE:=GPL-3.0
 PKG_LICENSE_FILES:=LICENSE.md
 
 PKG_BUILD_PARALLEL:=1
 PKG_FIXUP:=autoreconf
-
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16
+PKG_BUILD_DEPENDS:=gettext-full/host node/host
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/nls.mk
+
+# tvheadend needs iconv //TRANSLIT to build recording file names, which musl
+# does not implement, so always build against GNU libiconv.
+# With BUILD_NLS set, nls.mk already adds these for the same prefix.
+ifneq ($(CONFIG_BUILD_NLS),y)
+	ICONV_FULL_PREFIX:=$(STAGING_DIR)/usr/lib/libiconv-full
+	TARGET_CFLAGS += -I$(ICONV_FULL_PREFIX)/include
+	TARGET_LDFLAGS += -L$(ICONV_FULL_PREFIX)/lib -Wl,-rpath-link=$(ICONV_FULL_PREFIX)/lib
+endif
 
 define Package/tvheadend
   SECTION:=multimedia
   CATEGORY:=Multimedia
   TITLE:=TV streaming server
   MENU:=1
-  USERID:=tvheadend:dvb
+  USERID:=tvheadend:dvb=49
   URL:=https://tvheadend.org
   MAINTAINER:=Marius Dinu <m95d+git@psihoexpert.ro>
   DEPENDS:= \
+	dvb-support \
 	+librt \
 	+libffi \
 	+libopenssl \
-	$(ICONV_DEPENDS) \
+	+libiconv-full \
 	+zlib \
 	+TVHEADEND_AVAHI_SUPPORT:libavahi-client \
-	+TVHEADEND_REGEX_PCRE:libpcre \
 	+TVHEADEND_REGEX_PCRE2:libpcre2 \
-	+BUILD_PATENTED&&TVHEADEND_CSA:libdvbcsa
+	+TVHEADEND_CSA:libdvbcsa
 
 ## Transcoding | Add these to DEPENDS.
 ##	+TVHEADEND_LIBFFMPEG:libffmpeg-full \
@@ -54,7 +62,7 @@ endef
 define Package/tvheadend/description
   Tvheadend is a TV streaming server and recorder for Linux, FreeBSD and Android
   supporting DVB-S, DVB-S2, DVB-C, DVB-T, ATSC, IPTV, SAT>IP and HDHomeRun as input sources.
-  Tvheadend offers the HTTP (VLC, MPlayer), HTSP (Kodi, Movian) and SAT>IP streaming.
+  Tvheadend supports streaming to clients via HTTP (VLC, MPlayer), HTSP (Kodi, Movian), SAT>IP and TVHeadEnd emulation.
 endef
 
 define Package/tvheadend/config
@@ -76,17 +84,18 @@ endif
 ifeq ($(CONFIG_TVHEADEND_TRACE),)
 	CONFIGURE_ARGS += --disable-trace
 endif
+ifneq ($(CONFIG_TVHEADEND_MEMORYINFO),)
+	CONFIGURE_ARGS += --enable-slow_memoryinfo
+endif
 
-ifneq ($(CONFIG_TVHEADEND_REGEX_PCRE2),)
-	CONFIGURE_ARGS += --disable-pcre --enable-pcre2
+ifeq ($(CONFIG_TVHEADEND_REGEX_PCRE2),)
+	CONFIGURE_ARGS += --disable-pcre2
 else
-ifneq ($(CONFIG_TVHEADEND_REGEX_PCRE),)
-	CONFIGURE_ARGS += --enable-pcre --disable-pcre2
-else
-ifneq ($(CONFIG_TVHEADEND_REGEX_POSIX),)
-	CONFIGURE_ARGS += --disable-pcre --disable-pcre2
+	CONFIGURE_ARGS += --enable-pcre2
 endif
-endif
+
+ifeq ($(CONFIG_TVHEADEND_TIMESHIFT),)
+	CONFIGURE_ARGS += --disable-timeshift
 endif
 
 ifeq ($(CONFIG_TVHEADEND_AVAHI_SUPPORT),)
@@ -95,13 +104,13 @@ else
 	CONFIGURE_ARGS += --enable-avahi
 endif
 
-ifeq ($(CONFIG_TVHEADEND_IMAGECACHE),)
-	CONFIGURE_ARGS += --disable-imagecache
-else
-	CONFIGURE_ARGS += --enable-imagecache
-endif
-
 ## TV sources
+
+# Bug in tvheadend. Can't be disabled.
+#ifeq ($(CONFIG_TVHEADEND_TSFILE),)
+#	CONFIGURE_ARGS += --disable-tsfile
+#endif
+
 ifeq ($(CONFIG_TVHEADEND_LINUXDVB_SUPPORT),)
 	CONFIGURE_ARGS += --disable-linuxdvb
 endif
@@ -123,15 +132,29 @@ ifeq ($(CONFIG_TVHEADEND_SATIP_CLIENT),)
 endif
 
 ifeq ($(CONFIG_TVHEADEND_HDHOMERUN_CLIENT),)
-	CONFIGURE_ARGS += --disable-hdhomerun_static
+ifeq ($(CONFIG_TVHEADEND_HDHOMERUN_SERVER),)
+	CONFIGURE_ARGS += --disable-hdhomerun_static --disable-hdhomerun_client --disable-hdhomerun_server
 else
-	CONFIGURE_ARGS += --enable-hdhomerun_client
+	CONFIGURE_ARGS += --enable-hdhomerun_static --disable-hdhomerun_client --enable-hdhomerun_server
+endif
+else
+	CONFIGURE_ARGS += --enable-hdhomerun_static --enable-hdhomerun_client
+ifeq ($(CONFIG_TVHEADEND_HDHOMERUN_SERVER),)
+	CONFIGURE_ARGS += --disable-hdhomerun_server
+else
+	CONFIGURE_ARGS += --enable-hdhomerun_server
+endif
 endif
 
 ## Descrambling
-ifeq ($(CONFIG_BUILD_PATENTED),)
-	CONFIGURE_ARGS += --disable-tvhcsa --disable-dvbcsa --disable-constcw --disable-cwc --disable-capmt --disable-cccam
+ifeq ($(CONFIG_TVHEADEND_LINUXDVB_SUPPORT),)
+	CONFIGURE_ARGS += --disable-ddci
 else
+ifeq ($(CONFIG_TVHEADEND_DVB_DDCI),)
+	CONFIGURE_ARGS += --disable-ddci
+endif
+endif
+
 ifeq ($(CONFIG_TVHEADEND_CSA),)
 	CONFIGURE_ARGS += --disable-tvhcsa --disable-dvbcsa --disable-constcw --disable-cwc --disable-capmt --disable-cccam
 else
@@ -147,7 +170,6 @@ ifeq ($(CONFIG_TVHEADEND_CAPMT),)
 endif
 ifeq ($(CONFIG_TVHEADEND_CCCAM),)
 	CONFIGURE_ARGS += --disable-cccam
-endif
 endif
 endif
 
@@ -201,6 +223,7 @@ CONFIGURE_ARGS += \
 	--arch=$(ARCH) \
 	--disable-libsystemd_daemon \
 	--disable-dbus_1 \
+	--disable-pcre \
 	--disable-libav \
 	--disable-ffmpeg_static \
 	--disable-libx264 \
@@ -218,8 +241,10 @@ CONFIGURE_ARGS += \
 	--disable-libfdkaac \
 	--disable-libfdkaac_static \
 	--disable-pcloud_cache \
+	--enable-vue_build \
 	--enable-bundle \
 	--disable-uriparser \
+	--disable-execinfo \
 	--nowerror=unused-variable
 
 ## Transcoding | Remove these from CONFIGURE_ARGS.
@@ -234,12 +259,6 @@ CONFIGURE_ARGS += \
 ##	--disable-libfdkaac_static \
 ##	--disable-pcloud_cache \
 
-define Build/Prepare
-	$(call Build/Prepare/Default)
-	echo 'Tvheadend $(shell echo $(PKG_SOURCE_VERSION) | sed "s/^v//")~openwrt$(PKG_RELEASE)' \
-		> $(PKG_BUILD_DIR)/debian/changelog
-endef
-
 define Package/tvheadend/conffiles
 /etc/config/tvheadend
 /etc/tvheadend
@@ -250,8 +269,8 @@ define Package/tvheadend/install
 	$(INSTALL_BIN) ./files/tvheadend.init $(1)/etc/init.d/tvheadend
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_CONF) ./files/tvheadend.config $(1)/etc/config/tvheadend
-	$(INSTALL_DIR) $(1)/etc/hotplug.d/usb
-	$(INSTALL_BIN) ./files/dvb.hotplug $(1)/etc/hotplug.d/usb/50-dvb
+	$(INSTALL_DIR) $(1)/etc/hotplug.d/dvb
+	$(INSTALL_BIN) ./files/dvb.hotplug $(1)/etc/hotplug.d/dvb/50-dvb
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/build.linux/tvheadend $(1)/usr/bin/
 endef

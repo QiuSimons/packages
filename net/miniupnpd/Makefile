@@ -8,14 +8,14 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=miniupnpd
-PKG_VERSION:=2.2.3
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_VERSION:=2.3.11
+PKG_RELEASE:=1
 
-PKG_SOURCE_URL:=https://miniupnp.tuxfamily.org/files
+PKG_SOURCE_URL:=https://github.com/miniupnp/miniupnp/releases/download/miniupnpd_$(subst .,_,$(PKG_VERSION))
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_HASH:=f89c310ce9575183af3fec61af65e548f85114133df8caaaa9e204c13b7a9da5
+PKG_HASH:=91994b127da735b2c97f19992e34420648c0e8c4ace8a4bcb0596e7685c48678
 
-PKG_MAINTAINER:=
+PKG_MAINTAINER:=Alexandru Ardelean <ardeleanalex@gmail.com>
 PKG_LICENSE:=BSD-3-Clause
 PKG_LICENSE_FILES:=LICENSE
 PKG_CPE_ID:=cpe:/a:miniupnp_project:miniupnpd
@@ -34,7 +34,7 @@ define Package/miniupnpd/Default
 	+libmnl \
 	+libuuid
   PROVIDES:=miniupnpd
-  TITLE:=Lightweight UPnP IGD, NAT-PMP & PCP daemon
+  TITLE:=Lightweight UPnP IGD & PCP/NAT-PMP daemon
   SUBMENU:=Firewall
   URL:=https://miniupnp.tuxfamily.org/
 endef
@@ -74,18 +74,23 @@ define Build/Prepare
 endef
 
 CONFIGURE_ARGS = \
-	$(if $(CONFIG_IPV6),--ipv6) \
+	--disable-fork \
+	--disable-pppconn \
+	--firewall=$(BUILD_VARIANT) \
 	--igd2 \
+	$(if $(CONFIG_IPV6),--ipv6) \
 	--leasefile \
 	--portinuse \
-	--firewall=$(BUILD_VARIANT) \
-	--disable-fork
+	--regex \
+	--vendorcfg
 
 TARGET_CFLAGS += $(FPIC)
 TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed
 
 ifeq ($(BUILD_VARIANT),iptables)
+ifeq ($(filter $(ARCH),mips mipsel),)
 	TARGET_CFLAGS += -flto
+endif
 endif
 
 define Package/miniupnpd/install/Default
@@ -109,6 +114,8 @@ endef
 
 define Package/miniupnpd-nftables/install
 	$(call Package/miniupnpd/install/Default,$1)
+	$(INSTALL_DIR) $(1)/usr/share/nftables.d
+	$(CP) ./files/nftables.d/* $(1)/usr/share/nftables.d/
 endef
 
 $(eval $(call BuildPackage,miniupnpd-iptables))

@@ -5,12 +5,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gawk
-PKG_VERSION:=5.1.1
+PKG_VERSION:=5.4.1
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=@GNU/gawk
-PKG_HASH:=d87629386e894bbea11a5e00515fc909dc9b7249529dad9e6a3a2c77085f7ea2
+PKG_HASH:=07f6f7342b7febe4313fc2c2542ad93d64fe20ad8717200109f105a826f5fd37
 
 PKG_MAINTAINER:=Daniel Golle <daniel@makrotopia.org>
 PKG_LICENSE:=GPL-3.0-or-later
@@ -27,7 +27,10 @@ define Package/gawk
   URL:=https://www.gnu.org/software/gawk/
   TITLE:=GNU awk
   DEPENDS:=+libncursesw +libreadline
+  ALTERNATIVES:=200:/usr/bin/awk:/usr/bin/gawk
 endef
+
+CONFIGURE_ARGS+= --disable-mpfr
 
 define Package/gawk/install
 	$(INSTALL_DIR) $(1)/usr/bin
@@ -41,4 +44,3 @@ define Package/gawk/install
 endef
 
 $(eval $(call BuildPackage,gawk))
-

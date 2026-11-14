@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rpcbind
 PKG_VERSION:=1.2.6
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=2
 
 PKG_SOURCE_URL:=@SF/rpcbind
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
@@ -26,7 +26,7 @@ define Package/rpcbind
   CATEGORY:=Network
   DEPENDS:=+libtirpc +RPCBIND_LIBWRAP:libwrap
   TITLE:=Universal addresses to RPC mapper
-  URL:=http://rpcbind.sourceforge.net/
+  URL:=https://sourceforge.net/projects/rpcbind/
   USERID:=rpc=65533:rpc=65533
 endef
 

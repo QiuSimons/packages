@@ -8,14 +8,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=smcroute
-PKG_VERSION:=2.5.5
+PKG_VERSION:=2.5.6
 PKG_RELEASE:=1
 PKG_LICENSE:=GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING
+PKG_CPE_ID:=cpe:/a:troglobit:smcroute
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/troglobit/smcroute/releases/download/$(PKG_VERSION)
-PKG_HASH:=2569cd97fa2047df14203a7144be53a1b32928cb460421a302bbcce381b42bc3
+PKG_HASH:=0be38f617e322daafaa941c02423239f5c117b940cf0f45bacadb6733c4b3916
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -24,7 +25,7 @@ define Package/smcroute
 	CATEGORY:=Network
 	SUBMENU:=Routing and Redirection
 	TITLE:=Static Multicast Routing Daemon
-	URL:=http://troglobit.com/smcroute.html
+	URL:=https://troglobit.com/projects/smcroute/
 	MAINTAINER:=Moritz Warning <moritzwarning@web.de>
 endef
 

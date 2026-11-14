@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gensio
-PKG_VERSION:=2.4.2
+PKG_VERSION:=2.8.4
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@SF/ser2net
-PKG_HASH:=2593c1e7beaec3a0a4acbf60f94bbf64b99883d86f172a3b584eba5f67441b4b
+PKG_HASH:=28807dce0373f04271d44e1cdd38aa9486f3dd3060867b9acd370ece10404f62
 
 PKG_LICENSE:=GPL-2.0-or-later
 PKG_LICENSE_FILES:=COPYING
@@ -33,18 +33,34 @@ PKG_CONFIG_DEPENDS:= \
 	CONFIG_GENSIO_TCL \
 	CONFIG_GENSIO_SSHD
 
+PKG_BUILD_DEPENDS:=PACKAGE_python3-gensio:swig/host
+
 include $(INCLUDE_DIR)/package.mk
 include ../../lang/python/python3-package.mk
 
 CONFIGURE_ARGS += \
+	--$(if $(CONFIG_GENSIO_AVAHI),with,without)-avahi \
 	--$(if $(CONFIG_GENSIO_SSL),with,without)-openssl \
 	--$(if $(CONFIG_GENSIO_SCTP),with,without)-sctp \
 	--$(if $(CONFIG_GENSIO_WRAP),with,without)-tcp-wrappers \
 	--$(if $(CONFIG_GENSIO_PTHREADS),with,without)-pthreads \
 	--$(if $(CONFIG_GENSIO_GLIB),with,without)-glib \
 	--$(if $(CONFIG_GENSIO_TCL),with,without)-tcl \
+	--without-afskmdm \
+	--without-alsa \
+	--without-ax25 \
+	--without-cm108gpio \
+	--without-dnssd \
+	--without-go \
+	--without-ipmisol \
+	--without-kiss \
 	--without-openipmi \
+	--without-portaudio \
+	--without-sound \
+	--without-udev \
 	--with-cplusplus \
+	--with-flock-locking \
+	--with-uucp-locking \
 	--disable-doc
 
 CONFIGURE_VARS += \
@@ -61,6 +77,9 @@ CONFIGURE_VARS += \
 	PYTHON_LIBS="$(shell $(STAGING_DIR)/host/bin/$(PYTHON3)-config --ldflags) -l${PYTHON3}" \
 	PYTHON_CPPFLAGS="$(shell $(STAGING_DIR)/host/bin/$(PYTHON3)-config --includes)" \
 	PYTHON="$(STAGING_DIR_HOSTPKG)/bin/$(PYTHON3)"
+
+MAKE_VARS += \
+	PYTHON_LIBS="$(shell $(STAGING_DIR)/host/bin/$(PYTHON3)-config --ldflags) -l${PYTHON3}"
 else
 CONFIGURE_ARGS += \
 	--without-python \
@@ -79,7 +98,7 @@ define Package/gensio/Default/description
  I/O types. You create a gensio object (or a gensio), and you can use
  that gensio without having to know too much about what is going on
  underneath. You can stack gensio on top of another one to add protocol
- funcionality. For instance, you can create a TCP gensio, stack SSL on
+ functionality. For instance, you can create a TCP gensio, stack SSL on
  top of that, and stack Telnet on top of that. It supports a number of
  network I/O and serial ports.  Gensio can be used for sending and
  receiving ports, and it also supports establishing encrypted and
@@ -127,11 +146,11 @@ endef
 
 define Package/python3-gensio
 $(call Package/gensio/Default)
-  TITLE+= (Python3-bindings)
+  TITLE+= (Python bindings)
   SECTION:=lang
   CATEGORY:=Languages
-  BUILD_DEPENDS:=+swig +python3
-  DEPENDS:=+python3-light +libgensio
+  SUBMENU:=Python
+  DEPENDS:=+PACKAGE_python3-gensio:python3-light +libgensiocpp
 endef
 
 define Package/python3-gensio/description
@@ -146,7 +165,7 @@ $(call Package/gensio/Default)
   SECTION:=libs
   CATEGORY:=Libraries
   ABI_VERSION:=0
-  DEPENDS:=+libgensio +libstdcpp
+  DEPENDS:=+libgensio +PACKAGE_libgensiocpp:libstdcpp
 endef
 
 define Package/libgensiocpp/description
@@ -158,8 +177,9 @@ endef
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include/gensio/
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/include/gensio/* $(1)/usr/include/gensio/
-	$(INSTALL_DIR) $(1)/usr/lib/
+	$(INSTALL_DIR) $(1)/usr/lib/gensio
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/*.{so*,a,la} $(1)/usr/lib/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/gensio/* $(1)/usr/lib/gensio/
 	$(INSTALL_DIR) $(1)/usr/lib/pkgconfig/
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/lib/pkgconfig/* $(1)/usr/lib/pkgconfig/
 ifneq ($(CONFIG_PACKAGE_python3-gensio),)
@@ -170,8 +190,11 @@ endif
 endef
 
 define Package/libgensio/install
-	$(INSTALL_DIR) $(1)/usr/lib
+	$(INSTALL_DIR) $(1)/usr/lib/gensio
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libgensio.so.* $(1)/usr/lib/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libgensioosh.so.* $(1)/usr/lib/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libgensiomdns.so.* $(1)/usr/lib/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/gensio/* $(1)/usr/lib/gensio/
 ifeq ($(CONFIG_GENSIO_GLIB),y)
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libgensioglib.so.* $(1)/usr/lib/
 endif
@@ -197,7 +220,7 @@ endef
 
 define Package/libgensiocpp/install
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libgensiocpp.so.* $(1)/usr/lib/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libgensio*cpp.so.* $(1)/usr/lib/
 endef
 
 $(eval $(call BuildPackage,libgensio))

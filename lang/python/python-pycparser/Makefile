@@ -8,21 +8,31 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=python-pycparser
-PKG_VERSION:=2.21
+PKG_VERSION:=3.11
 PKG_RELEASE:=1
 
 PYPI_NAME:=pycparser
-PKG_HASH:=e644fdec12f7872f86c58ff790da456218b10f863970249516d60a5eaca77206
+PKG_HASH:=d875f09c3507d00e1aba0eecc6dcadc1352f30fff09dc6bff2f1c2935e97c2bc
 
 PKG_LICENSE:=BSD-3-Clause
 PKG_LICENSE_FILES:=LICENSE
-PKG_MAINTAINER:=Jeffery To <jeffery.to@gmail.com>
+PKG_MAINTAINER:=Alexandru Ardelean <ardeleanalex@gmail.com>
 
-HOST_PYTHON3_PACKAGE_BUILD_DEPENDS:=ply  # ply==3.10
+PKG_BUILD_DEPENDS:= \
+	python3/host \
+	python-setuptools/host
+HOST_BUILD_DEPENDS:= \
+	python3/host \
+	python-setuptools/host \
+	python-build/host \
+	python-installer/host \
+	python-wheel/host
 
 include ../pypi.mk
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/host-build.mk
 include ../python3-package.mk
+include ../python3-host-build.mk
 
 define Package/python3-pycparser
   SECTION:=lang
@@ -31,8 +41,7 @@ define Package/python3-pycparser
   TITLE:=C parser in Python
   URL:=https://github.com/eliben/pycparser
   DEPENDS:= \
-      +python3-light \
-      +python3-ply
+      +python3-light
 endef
 
 define Package/python3-pycparser/description
@@ -44,3 +53,4 @@ endef
 $(eval $(call Py3Package,python3-pycparser))
 $(eval $(call BuildPackage,python3-pycparser))
 $(eval $(call BuildPackage,python3-pycparser-src))
+$(eval $(call HostBuild))

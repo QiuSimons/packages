@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=davfs2
 PKG_VERSION:=1.6.1
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@SAVANNAH/davfs2
@@ -18,7 +18,7 @@ PKG_HASH:=ce3eb948ece582a51c934ccb0cc70e659839172717caff173f69a5e2af90c5c0
 PKG_MAINTAINER:=Federico Di Marco <fededim@gmail.com>
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=COPYING
-PKG_CPE_ID:=cpe:/a:davfs2:davfs2
+PKG_CPE_ID:=cpe:/a:werner_baumann:davfs2
 
 PKG_FIXUP:=gettext-version
 PKG_INSTALL:=1

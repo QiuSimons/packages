@@ -6,7 +6,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=flex
 PKG_VERSION:=2.6.4
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=4
 PKG_CPE_ID:=cpe:/a:flex_project:flex
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
@@ -35,6 +35,12 @@ define Package/flex/description
 endef
 
 CONFIGURE_ARGS += --disable-shared --disable-bootstrap
+
+define Build/InstallDev
+	$(INSTALL_DIR) $(1)/usr/include $(1)/usr/lib
+	$(CP) $(PKG_INSTALL_DIR)/usr/include/* $(1)/usr/include/
+	$(CP) $(PKG_INSTALL_DIR)/usr/lib/* $(1)/usr/lib/
+endef
 
 define Package/flex/install
 	$(INSTALL_DIR) $(1)/usr/bin/

@@ -6,13 +6,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gnutls
-PKG_VERSION:=3.7.6
-PKG_RELEASE:=$(AUTORELEASE)
-PKG_USE_MIPS16:=0
+PKG_VERSION:=3.8.10
+PKG_RELEASE:=2
+PKG_BUILD_FLAGS:=no-mips16
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
-PKG_SOURCE_URL:=https://www.gnupg.org/ftp/gcrypt/gnutls/v3.7
-PKG_HASH:=77065719a345bfb18faa250134be4c53bef70c1bd61f6c0c23ceb8b44f0262ff
+PKG_SOURCE_URL:=https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8
+PKG_HASH:=db7fab7cce791e7727ebbef2334301c821d79a550ec55c9ef096b610b03eb6b7
 
 PKG_MAINTAINER:=Nikos Mavrogiannopoulos <nmav@gnutls.org>
 PKG_LICENSE:=LGPL-2.1-or-later
@@ -48,7 +48,7 @@ define Package/gnutls/Default
   SECTION:=libs
   CATEGORY:=Libraries
   TITLE:=GNU TLS
-  URL:=http://www.gnutls.org/
+  URL:=https://gnutls.org/
 endef
 
 define Package/gnutls/Default/description
@@ -98,13 +98,13 @@ endef
 define Package/libgnutls
 $(call Package/gnutls/Default)
   TITLE+= (library)
-  DEPENDS+= +libnettle +!LIBNETTLE_MINI:libgmp +GNUTLS_EXT_LIBTASN1:libtasn1 +GNUTLS_PKCS11:p11-kit +GNUTLS_CRYPTODEV:kmod-cryptodev +libatomic
+  DEPENDS+= +libnettle +!LIBNETTLE_MINI:libgmp +GNUTLS_EXT_LIBTASN1:libtasn1 +GNUTLS_PKCS11:p11-kit +GNUTLS_CRYPTODEV:kmod-cryptodev
 endef
 
 define Package/libgnutls-dane
 $(call Package/gnutls/Default)
   TITLE+= (libgnutls-dane library)
-  DEPENDS:= +libgnutls +libunbound
+  DEPENDS:= +libgnutls +PACKAGE_libgnutls-dane:libunbound
 endef
 
 define Package/libgnutls/description
@@ -132,6 +132,7 @@ CONFIGURE_ARGS+= \
 	--without-idn \
 	--with-default-trust-store-dir=/etc/ssl/certs/ \
 	--with-included-unistring \
+	--with-included-libunistring \
 	--with-librt-prefix="$(LIBRT_ROOT_DIR)/" \
 	--with-pic \
 	--with-system-priority-file="" \

@@ -8,20 +8,21 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=rsyslog
-PKG_VERSION:=8.2110.0
-PKG_RELEASE:=1
+PKG_VERSION:=8.2606.0
+PKG_RELEASE:=3
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:= \
 	https://fossies.org/linux/misc \
 	https://www.rsyslog.com/files/download/rsyslog
-PKG_HASH:=3f904ec137ca6412e8273f7896d962ecb589f7d0c589bdf16b1709ec27e24f31
+PKG_HASH:=2574b3f3068e6955eb94ef5643e2b6a5b8585cc8eaa77209ff5cbc1e2e5f71e5
 
-PKG_MAINTAINER:=
+PKG_MAINTAINER:=Alexandru Ardelean <ardeleanalex@gmail.com>
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=COPYING
 PKG_CPE_ID:=cpe:/a:rsyslog:rsyslog
 
+PKG_FIXUP:=autoreconf
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
 
@@ -34,10 +35,10 @@ define Package/rsyslog
   URL:=https://www.rsyslog.com/
   DEPENDS:= \
 	+RSYSLOG_gssapi_krb5:krb5-libs +RSYSLOG_elasticsearch:libcurl \
-	+RSYSLOG_libdbi:libdbi +libestr +libfastjson +RSYSLOG_gnutls:libgnutls \
+	+libestr +libfastjson +RSYSLOG_gnutls:libgnutls \
 	+RSYSLOG_mmdblookup:libmaxminddb +RSYSLOG_mysql:libmysqlclient \
 	+RSYSLOG_omhttp:libcurl +RSYSLOG_openssl:libopenssl \
-	+RSYSLOG_pgsql:libpq +libuuid +zlib
+	+RSYSLOG_pgsql:libpq +RSYSLOG_libyaml:libyaml +libuuid +zlib
   MENU:=1
 endef
 
@@ -50,10 +51,11 @@ CONFIGURE_ARGS+= \
 	--disable-fmhttp \
 	--disable-default-tests \
 	--disable-libsystemd \
+	--disable-impstats-push \
+	$(if $(CONFIG_RSYSLOG_libyaml),--enable-libyaml,--disable-libyaml) \
 	$(if $(CONFIG_RSYSLOG_gssapi_krb5),--enable-gssapi-krb5) \
 	$(if $(CONFIG_RSYSLOG_mysql),--enable-mysql) \
 	$(if $(CONFIG_RSYSLOG_pgsql),--enable-pgsql) \
-	$(if $(CONFIG_RSYSLOG_libdbi),--enable-libdbi) \
 	$(if $(CONFIG_RSYSLOG_elasticsearch),--enable-elasticsearch) \
 	$(if $(CONFIG_RSYSLOG_omhttp),--enable-omhttp) \
 	$(if $(CONFIG_RSYSLOG_openssl),--enable-openssl) \
@@ -61,7 +63,8 @@ CONFIGURE_ARGS+= \
 	$(if $(CONFIG_RSYSLOG_mail),--enable-mail) \
 	$(if $(CONFIG_RSYSLOG_mmjsonparse),--enable-mmjsonparse) \
 	$(if $(CONFIG_RSYSLOG_mmdblookup),--enable-mmdblookup) \
-	$(if $(CONFIG_RSYSLOG_imfile),--enable-imfile)
+	$(if $(CONFIG_RSYSLOG_imfile),--enable-imfile) \
+	$(if $(CONFIG_RSYSLOG_impstats),--enable-impstats)
 
 define Package/rsyslog/install
 	$(INSTALL_DIR) $(1)/usr/sbin

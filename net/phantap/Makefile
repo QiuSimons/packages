@@ -2,7 +2,7 @@
 # Copyright (C) 2019 Etienne Champetier <champetier.etienne@gmail.com>
 #
 # This is free software, licensed under the GNU General Public License v3.
-# See <http://www.gnu.org/licenses/> for more information.
+# See <https://www.gnu.org/licenses/> for more information.
 
 include $(TOPDIR)/rules.mk
 
@@ -11,9 +11,9 @@ PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/nccgroup/phantap
-PKG_MIRROR_HASH:=b5a8658d9347bb7bc295a224f8f546582ca8a766e904b8004cd0a19d7b65d400
-PKG_SOURCE_DATE:=2022.02.12
-PKG_SOURCE_VERSION:=e80be64901c96f9340d33f79d719faf3d93cd7f0
+PKG_MIRROR_HASH:=6835a7161c8719bcfecbc3e9680ba5d7d1c44ae2e52e43b91a6153bea9c7d440
+PKG_SOURCE_DATE:=2025.10.06
+PKG_SOURCE_VERSION:=e8d10eafd2142b179dcb4eb90a172137ab60d539
 
 PKG_MAINTAINER:=Diana Dragusin <diana.dragusin@nccgroup.com>, \
     Etienne Champetier <champetier.etienne@gmail.com>
@@ -34,7 +34,7 @@ define Package/phantap
   $(call Package/phantap/Default)
   TITLE:=PhanTap
   PKGARCH:=all
-  DEPENDS:=+libpcap +libnl-tiny +ip-full +kmod-nft-bridge
+  DEPENDS:=+libpcap +libnl-tiny +ip-full +kmod-nft-bridge +kmod-nft-netdev
 endef
 
 define Package/phantap/conffiles
